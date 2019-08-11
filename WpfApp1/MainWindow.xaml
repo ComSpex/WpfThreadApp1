@@ -6,11 +6,10 @@
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-	<StackPanel>
-		<Viewbox>
-			<TextBlock x:Name="face"><Run Text="Hello Wpf"/>
-			</TextBlock>
-		</Viewbox>
+    <StackPanel>
+        <Viewbox>
+            <TextBlock Name="face">Hello Wpf</TextBlock>
+        </Viewbox>
 		<Button Content="Terminate" Height="75" Margin="358,0,261,0" RenderTransformOrigin="0.47,1.881" Click="Button_Click">
 			<Button.RenderTransform>
 				<TransformGroup>
