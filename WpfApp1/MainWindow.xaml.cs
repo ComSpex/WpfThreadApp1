@@ -18,8 +18,8 @@ namespace WpfApp1 {
 		delegate void ThreadSafe1(object arg);
 		public MainWindow() {
 			InitializeComponent();
-			//CreateTimerOne(this.face);
-			CreateTimerTwo(this.face);
+			CreateTimerOne(this.face);
+			//CreateTimerTwo(this.face);
 		}
 		private void CreateTimerTwo(object arg) {
 			if(tack!=null) {
@@ -60,17 +60,18 @@ namespace WpfApp1 {
 					tb.Text=DateTime.Now.ToString("HH:mm:ss.fff");
 				}
 				DoEvents();
+			} else {
+				tick=new Timer((o) => {
+					TextBlock tb = o as TextBlock;
+					if(!tb.Dispatcher.CheckAccess()) {
+						try {
+							Dispatcher.Invoke(() => CreateTimerOne(arg));
+						} catch { }
+					} else {
+						tb.Text=DateTime.Now.ToString("HH:mm:ss.fff");
+					}
+				},arg,1000,interval);
 			}
-			tick=new Timer((o) => {
-				TextBlock tb = o as TextBlock;
-				if(!tb.Dispatcher.CheckAccess()) {
-					try {
-						Dispatcher.Invoke(() => CreateTimerOne(arg));
-					} catch { }
-				} else {
-					tb.Text=DateTime.Now.ToString("HH:mm:ss.fff");
-				}
-			},arg,1000,interval);
 		}
 		public void DoEvents() {
 			DispatcherFrame frame = new DispatcherFrame();
