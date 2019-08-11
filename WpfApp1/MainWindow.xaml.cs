@@ -25,7 +25,6 @@ namespace WpfApp1 {
 				} else {
 					tb.Text=DateTime.Now.ToString("HH:mm:ss.fff");
 				}
-				//Thread.Sleep(0);
 				DoEvents();
 			}
 			tick=new Timer((o) => {
@@ -37,7 +36,7 @@ namespace WpfApp1 {
 				} else {
 					tb.Text=DateTime.Now.ToString("HH:mm:ss.fff");
 				}
-			},arg,1000,10);
+			},arg,1000,1000);
 		}
 		public void DoEvents() {
 			DispatcherFrame frame = new DispatcherFrame();
@@ -47,6 +46,11 @@ namespace WpfApp1 {
 					return null;
 				}),frame);
 			Dispatcher.PushFrame(frame);
+		}
+		private void Button_Click(object sender,RoutedEventArgs e) {
+			if(MessageBoxResult.OK==MessageBox.Show("Are you sure to terminate this program?",this.Title,MessageBoxButton.OKCancel,MessageBoxImage.Question)) {
+				Close();
+			}
 		}
 	}
 }
