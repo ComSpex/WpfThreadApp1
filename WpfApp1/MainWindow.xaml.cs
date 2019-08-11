@@ -6,6 +6,7 @@ using System.Windows.Threading;
 using System.Timers;
 using TimerTimer = System.Timers.Timer;
 using Timer = System.Threading.Timer;
+using System.Threading.Tasks;
 
 namespace WpfApp1 {
 	/// <summary>
@@ -16,34 +17,39 @@ namespace WpfApp1 {
 		TimerTimer tack;
 		const int interval = 10;
 		delegate void ThreadSafe1(object arg);
+		CancellationToken cancel = CancellationToken.None;
 		public MainWindow() {
 			InitializeComponent();
-			CreateTimerOne(this.face);
-			//CreateTimerTwo(this.face);
+			//CreateTimerOne(this.face);
+			CreateTimerTwoAsync(this.face);
 		}
-		private void CreateTimerTwo(object arg) {
+		private async void CreateTimerTwoAsync(object arg) {
 			if(tack!=null) {
 				TextBlock tb = arg as TextBlock;
 				if(!tb.Dispatcher.CheckAccess()) {
 					try {
-						Dispatcher.Invoke(() => CreateTimerTwo(arg));
+						Dispatcher.Invoke(() => CreateTimerTwoAsync(arg));
 					} catch { }
 				} else {
 					tb.Text=DateTime.Now.ToString("HH:mm:ss.fff");
 				}
 				DoEvents();
 			} else {
+#if false
 				tack=new TimerTimer();
 				tack.Interval=interval;
 				tack.Elapsed+=Tack_Elapsed;
 				tack.Start();
+#else
+				await DoUIThreadWorkAsync(cancel);
+#endif
 			}
 		}
 		private void Tack_Elapsed(object sender,ElapsedEventArgs e) {
 			TextBlock tb = this.face;
 			if(!tb.Dispatcher.CheckAccess()) {
 				try {
-					Dispatcher.Invoke(() => CreateTimerTwo(tb));
+					Dispatcher.Invoke(() => CreateTimerTwoAsync(tb));
 				} catch { }
 			} else {
 				tb.Text=DateTime.Now.ToString("HH:mm:ss.fff");
@@ -82,6 +88,22 @@ namespace WpfApp1 {
 					return null;
 				}),frame);
 			Dispatcher.PushFrame(frame);
+		}
+		async Task DoUIThreadWorkAsync(CancellationToken token) {
+			Func<Task> idleYield = async () => await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+
+			var cancellationTcs = new TaskCompletionSource<bool>();
+			using(token.Register(() => cancellationTcs.SetCanceled(),useSynchronizationContext: true)) {
+				while(true) {
+					await Task.Delay(100,token);
+					await Task.WhenAny(idleYield(),cancellationTcs.Task);
+					token.ThrowIfCancellationRequested();
+
+					// do the UI-related work
+					face.Text=DateTime.Now.ToString("HH:mm:ss.fff");
+				}
+
+			}
 		}
 		private void Button_Click(object sender,RoutedEventArgs e) {
 			if(MessageBoxResult.OK==MessageBox.Show("Are you sure to terminate this program?",this.Title,MessageBoxButton.OKCancel,MessageBoxImage.Question)) {
