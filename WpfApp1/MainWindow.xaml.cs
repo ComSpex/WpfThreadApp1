@@ -74,6 +74,7 @@ namespace WpfApp1 {
 			}
 		}
 		public void DoEvents() {
+			Thread.Sleep(0);
 			DispatcherFrame frame = new DispatcherFrame();
 			Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background,
 				new DispatcherOperationCallback((o) => {
