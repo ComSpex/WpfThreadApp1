@@ -7,6 +7,7 @@ using System.Timers;
 using TimerTimer = System.Timers.Timer;
 using Timer = System.Threading.Timer;
 using System.Threading.Tasks;
+using System.ComponentModel;
 
 namespace WpfApp1 {
 	/// <summary>
@@ -15,7 +16,7 @@ namespace WpfApp1 {
 	public partial class MainWindow:Window {
 		Timer tick;
 		TimerTimer tack;
-		const int interval = 10;
+		const int interval = 1;
 		delegate void ThreadSafe1(object arg);
 		CancellationToken cancel = CancellationToken.None;
 		public MainWindow() {
@@ -106,9 +107,13 @@ namespace WpfApp1 {
 			}
 		}
 		private void Button_Click(object sender,RoutedEventArgs e) {
-			if(MessageBoxResult.OK==MessageBox.Show("Are you sure to terminate this program?",this.Title,MessageBoxButton.OKCancel,MessageBoxImage.Question)) {
-				Close();
+			Close();
+		}
+		protected override void OnClosing(CancelEventArgs e) {
+			if(MessageBoxResult.Cancel==MessageBox.Show("Are you sure to terminate this program?",this.Title,MessageBoxButton.OKCancel,MessageBoxImage.Question,MessageBoxResult.Cancel)) {
+				e.Cancel=true;
 			}
+			base.OnClosing(e);
 		}
 	}
 }
